@@ -37,6 +37,9 @@ class _CrrNodes(NamedTuple):
 
 
 _VEGA_BUMP = 1.0e-4
+# Below this, sigma * sqrt(dt) cannot resolve drift from zero, so the tree is
+# routed to the deterministic (zero-vol) forward instead of a frozen all-up/down tree.
+_DEGEN_EPS = 1e-10
 
 
 def crr_american_price_greeks(
@@ -89,7 +92,7 @@ def _crr_price_greeks(
         raise ValueError(f"steps must be an int >= 2, got {steps!r}")
     if time_years == 0.0:
         return expired_greeks(spot, strike, right)
-    if volatility == 0.0:
+    if volatility == 0.0 or volatility * math.sqrt(time_years / steps) < _DEGEN_EPS:
         european = zero_vol_european(
             spot=spot,
             strike=strike,
@@ -246,11 +249,12 @@ def _roll(
     if denom == 0.0:
         raise ValueError("CRR up/down collapsed; volatility and step size are invalid")
     risk_neutral_p = (growth - down) / denom
-    if not 0.0 < risk_neutral_p < 1.0:
-        raise ValueError(
-            f"CRR risk-neutral probability {risk_neutral_p} is outside (0, 1); "
-            "rate, yield, volatility, and step size are not a valid tree"
-        )
+    # Low vol / near-expiry / high drift can push the naive p just outside
+    # [0, 1]. Clamp to the deterministic limit rather than raise: the tree is
+    # then continuous with the zero-vol path, and reachable prices stay
+    # reachable (e.g. vol=0.0026, r=0.05 used to raise). This is standard
+    # production CRR practice.
+    risk_neutral_p = min(max(risk_neutral_p, 0.0), 1.0)
     discount = math.exp(-rate * dt)
     call = is_call(right)
     values = [0.0] * (n + 1)

@@ -31,6 +31,23 @@ def test_twr_cli_exits_zero_on_demo(tmp_path: Path) -> None:
     assert "all" in result.output
     assert "ytd" in result.output
     assert "trailing-12" in result.output
+    # Pin the README-published seeded numbers so the demo output cannot drift silently.
+    all_row = next(line for line in result.output.splitlines() if line.startswith("all"))
+    assert "0.12%" in all_row
+    assert "-0.02%" in all_row
+    assert all_row.rstrip().endswith("1")  # ttr_days
+
+
+def test_twr_cli_exits_one_on_missing_account_column(tmp_path: Path) -> None:
+    """A hand-edited account_snapshot missing a column FAILs cleanly, not a traceback."""
+    built = tmp_path / "demo"
+    runner.invoke(app, ["demo-build", "--out", str(built), "--fixture", str(DEMO_FIXTURE)])
+    account = pd.read_parquet(built / "account_snapshot.parquet").drop(columns=["nlv"])
+    account.to_parquet(built / "account_snapshot.parquet", index=False)
+    result = runner.invoke(app, ["twr", "--data", str(built)])
+    assert result.exit_code == 1, result.output
+    assert "FAIL" in result.output
+    assert not isinstance(result.exception, AttributeError)
 
 
 def test_twr_cli_exits_one_on_nonpositive_nlv(tmp_path: Path) -> None:

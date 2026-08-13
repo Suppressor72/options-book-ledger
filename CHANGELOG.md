@@ -8,6 +8,14 @@ Reviewers needed a CI shield and a short map of pure vs product layers, plus the
 
 CRR tests needed to show the early-exercise *decision*: an American put holds intrinsic when the European is below it, and a no-dividend American call is not exercised.
 
+Fail-closed DQ had to cover the marks NLV recon multiplies — `model_price`, `delta`, `vega`, `multiplier`, and `strike` — not just spot, IV, and qty; a duplicate leg or a blank instrument id breaks DQ too, instead of passing clean and surfacing only at recon.
+
+The ledger writer could silently delete a year partition that was not in the input, so building one year destroyed every other year. It now leaves foreign years alone by default; pruning is opt-in (`replace=True`).
+
+CRR raised on any low-but-nonzero volatility, because the risk-neutral probability slipped outside (0, 1) under the vega bump. Low-vol and near-expiry legs now price — the probability is clamped and a degenerate tree routes to the deterministic forward — instead of making a reachable price unreachable.
+
+The fail-closed read paths (DQ, recon, TWR, web) treat unreadable Parquet — corrupt bytes, a missing column, a permission error — as a reportable break instead of a traceback; the pure-layer import fence now forbids `pandas`, `numpy`, and the demo package, not just the product layers; and the README's seeded TWR numbers are pinned by a test so the published output cannot drift silently.
+
 ## 0.1.0 — 2026-08-13
 
 Shipped P0–P7 as a narrow book-operations stack, then set the GitHub repo public.

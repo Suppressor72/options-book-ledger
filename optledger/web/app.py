@@ -58,7 +58,7 @@ def _page_ledger() -> None:
     st.dataframe(recon_issue_frame(report), use_container_width=True)
     try:
         events = read_ledger(root)
-    except (FileNotFoundError, ValueError) as exc:
+    except (FileNotFoundError, ValueError, OSError) as exc:
         st.error(str(exc))
         return
     st.subheader("Events")
@@ -71,7 +71,7 @@ def _page_scenarios() -> None:
     st.caption(_SEED_CAPTION)
     try:
         positions = load_position_snapshot(root)
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError, OSError) as exc:
         st.error(str(exc))
         return
     pins = eod_snapshot_ids(positions)

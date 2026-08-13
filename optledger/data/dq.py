@@ -35,6 +35,8 @@ def check_snapshot_dir(root: Path) -> DqReport:
         frames = read_snapshots(root)
     except FileNotFoundError as exc:
         return DqReport(issues=(DqIssue(family="all", code="missing_file", message=str(exc)),))
+    except (ValueError, OSError) as exc:
+        return DqReport(issues=(DqIssue(family="all", code="unreadable", message=str(exc)),))
     return check_frames(frames)
 
 
@@ -49,6 +51,7 @@ def check_frames(frames: dict[SnapshotFamily, pd.DataFrame]) -> DqReport:
             issues.extend(_pin_issues_for(family, frames[family]))
     if _has_columns(frames, "position_snapshot", COLUMNS["position_snapshot"]):
         issues.extend(_value_issues(frames["position_snapshot"]))
+        issues.extend(_key_issues(frames["position_snapshot"]))
     if _has_columns(frames, "account_snapshot", ("snapshot_id", "nlv", "cash")):
         issues.extend(_account_numeric_issues(frames["account_snapshot"]))
     if _has_columns(frames, "book_metrics", METRICS_COLUMNS):
@@ -171,6 +174,11 @@ def _value_issues(positions: pd.DataFrame) -> list[DqIssue]:
         spot = parse_finite_float(row.spot)
         iv = parse_finite_float(row.iv)
         qty = parse_finite_float(row.qty)
+        model_price = parse_finite_float(row.model_price)
+        delta = parse_finite_float(row.delta)
+        vega = parse_finite_float(row.vega)
+        multiplier = parse_finite_float(row.multiplier)
+        strike = parse_finite_float(row.strike)
         if spot is None:
             issues.append(
                 DqIssue(
@@ -186,6 +194,36 @@ def _value_issues(positions: pd.DataFrame) -> list[DqIssue]:
                     family="position_snapshot",
                     code="nonpositive_spot",
                     message=f"spot {spot} is not positive",
+                    snapshot_id=snapshot_id,
+                )
+            )
+        # Marks and greeks that NLV recon multiplies; required finite on every
+        # row (an underlier still carries a finite model_price, unit delta, 0 vega).
+        for name, value in (("model_price", model_price), ("delta", delta), ("vega", vega)):
+            if value is None:
+                issues.append(
+                    DqIssue(
+                        family="position_snapshot",
+                        code="invalid_numeric",
+                        message=f"{name} is not a finite number: {getattr(row, name)!r}",
+                        snapshot_id=snapshot_id,
+                    )
+                )
+        if multiplier is None:
+            issues.append(
+                DqIssue(
+                    family="position_snapshot",
+                    code="invalid_numeric",
+                    message=f"multiplier is not a finite number: {row.multiplier!r}",
+                    snapshot_id=snapshot_id,
+                )
+            )
+        elif multiplier <= 0.0:
+            issues.append(
+                DqIssue(
+                    family="position_snapshot",
+                    code="nonpositive_multiplier",
+                    message=f"multiplier {multiplier} must be positive",
                     snapshot_id=snapshot_id,
                 )
             )
@@ -206,6 +244,24 @@ def _value_issues(positions: pd.DataFrame) -> list[DqIssue]:
                         family="position_snapshot",
                         code="iv_nonpositive",
                         message=f"iv {iv} must be > 0",
+                        snapshot_id=snapshot_id,
+                    )
+                )
+            if strike is None:
+                issues.append(
+                    DqIssue(
+                        family="position_snapshot",
+                        code="invalid_numeric",
+                        message=f"strike is not a finite number: {row.strike!r}",
+                        snapshot_id=snapshot_id,
+                    )
+                )
+            elif strike <= 0.0:
+                issues.append(
+                    DqIssue(
+                        family="position_snapshot",
+                        code="nonpositive_strike",
+                        message=f"strike {strike} must be positive",
                         snapshot_id=snapshot_id,
                     )
                 )
@@ -267,6 +323,52 @@ def _value_issues(positions: pd.DataFrame) -> list[DqIssue]:
                         snapshot_id=snapshot_id,
                     )
                 )
+    return issues
+
+
+def _key_issues(positions: pd.DataFrame) -> list[DqIssue]:
+    """Blank join keys and duplicate ``(snapshot_id, instrument_id)`` legs.
+
+    ``instrument_id`` is the qty-recon join key; a blank one is silently dropped
+    by recon, and a duplicate leg double-counts qty and mark.
+    """
+    issues: list[DqIssue] = []
+    seen: set[tuple[str, str]] = set()
+    for row in positions.itertuples(index=False):
+        snapshot_id = _optional_str(row.snapshot_id)
+        symbol = _optional_str(row.symbol)
+        instrument_id = _optional_str(row.instrument_id)
+        if symbol is None:
+            issues.append(
+                DqIssue(
+                    family="position_snapshot",
+                    code="blank_key",
+                    message="symbol is blank",
+                    snapshot_id=snapshot_id,
+                )
+            )
+        if instrument_id is None:
+            issues.append(
+                DqIssue(
+                    family="position_snapshot",
+                    code="blank_key",
+                    message="instrument_id is blank",
+                    snapshot_id=snapshot_id,
+                )
+            )
+            continue
+        key = (snapshot_id or "", instrument_id)
+        if key in seen:
+            issues.append(
+                DqIssue(
+                    family="position_snapshot",
+                    code="duplicate_position",
+                    message=(f"duplicate (snapshot_id, instrument_id) leg {instrument_id!r}"),
+                    snapshot_id=snapshot_id,
+                )
+            )
+        else:
+            seen.add(key)
     return issues
 
 

@@ -108,7 +108,7 @@ def test_open_only_account_is_missing_eod() -> None:
     assert any(issue.code == "missing_eod" for issue in report.issues)
 
 
-def test_write_ledger_replaces_stale_year_files(tmp_path: Path) -> None:
+def test_write_ledger_replace_prunes_foreign_years(tmp_path: Path) -> None:
     def _events(year: str, event_id: str) -> pd.DataFrame:
         return pd.DataFrame(
             [
@@ -128,8 +128,36 @@ def test_write_ledger_replaces_stale_year_files(tmp_path: Path) -> None:
 
     write_ledger(tmp_path, _events("2023", "evt-old"))
     assert (tmp_path / "ledger" / "2023.parquet").is_file()
-    write_ledger(tmp_path, _events("2024", "evt-new"))
+    write_ledger(tmp_path, _events("2024", "evt-new"), replace=True)
     assert not (tmp_path / "ledger" / "2023.parquet").is_file()
     loaded = read_ledger(tmp_path)
     assert list(loaded["event_id"]) == ["evt-new"]
     assert str(loaded["as_of"].iloc[0]).startswith("2024")
+
+
+def test_write_ledger_preserves_foreign_years_by_default(tmp_path: Path) -> None:
+    """Writing one year must never destroy another year's history."""
+
+    def _events(year: str, event_id: str) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                {
+                    "event_id": event_id,
+                    "as_of": f"{year}-06-21T00:00:00",
+                    "account": "demo",
+                    "event_kind": "cash_deposit",
+                    "symbol": "XYZ",
+                    "instrument_id": "",
+                    "qty": 0.0,
+                    "cash": 1.0,
+                }
+            ],
+            columns=list(LEDGER_COLUMNS),
+        )
+
+    write_ledger(tmp_path, _events("2023", "evt-old"))
+    write_ledger(tmp_path, _events("2024", "evt-new"))
+    assert (tmp_path / "ledger" / "2023.parquet").is_file()
+    assert (tmp_path / "ledger" / "2024.parquet").is_file()
+    loaded = read_ledger(tmp_path)
+    assert set(loaded["event_id"]) == {"evt-old", "evt-new"}

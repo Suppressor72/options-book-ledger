@@ -22,10 +22,20 @@ _DEPOSIT_KIND = "cash_deposit"
 
 
 def twr_from_snapshot_dir(root: Path) -> tuple[TwrResult, ...]:
-    frames = read_snapshots(root)
-    events = read_ledger(root)
-    points = eod_nlv_points(frames["account_snapshot"])
-    deposits = deposit_flows(events)
+    try:
+        frames = read_snapshots(root)
+        events = read_ledger(root)
+        points = eod_nlv_points(frames["account_snapshot"])
+        deposits = deposit_flows(events)
+    except FileNotFoundError:
+        raise
+    except TwrError:
+        raise
+    except (ValueError, KeyError, AttributeError, OSError) as exc:
+        # Schema gaps, corrupt Parquet (ArrowInvalid is a ValueError), missing
+        # columns (itertuples AttributeError), or permission errors become a
+        # clean FAIL instead of a raw traceback.
+        raise TwrError(f"unreadable snapshot or ledger: {exc}") from exc
     return report_windows(points, deposits)
 
 

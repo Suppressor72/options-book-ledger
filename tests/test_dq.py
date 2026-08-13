@@ -7,7 +7,7 @@ import pandas as pd
 from typer.testing import CliRunner
 
 from optledger.cli.app import app
-from optledger.data.dq import check_frames, parse_date, parse_finite_float
+from optledger.data.dq import check_frames, check_snapshot_dir, parse_date, parse_finite_float
 from optledger.data.schema import SnapshotFamily
 from optledger.data.store import write_snapshots
 
@@ -212,3 +212,72 @@ def test_missing_metrics_column_still_reports_position_nan() -> None:
     assert any(
         issue.code == "invalid_numeric" and "spot" in issue.message for issue in report.issues
     )
+
+
+def test_nan_model_price_is_invalid_numeric() -> None:
+    frames = _clean_frames()
+    frames["position_snapshot"] = frames["position_snapshot"].copy()
+    frames["position_snapshot"].loc[0, "model_price"] = math.nan
+    report = check_frames(frames)
+    assert not report.ok
+    assert any(
+        issue.code == "invalid_numeric" and "model_price" in issue.message
+        for issue in report.issues
+    )
+
+
+def test_nan_delta_and_vega_are_invalid_numeric() -> None:
+    frames = _clean_frames()
+    frames["position_snapshot"] = frames["position_snapshot"].copy()
+    frames["position_snapshot"].loc[0, "delta"] = math.nan
+    frames["position_snapshot"].loc[0, "vega"] = math.nan
+    report = check_frames(frames)
+    assert not report.ok
+    messages = {i.message for i in report.issues if i.code == "invalid_numeric"}
+    assert any("delta" in m for m in messages)
+    assert any("vega" in m for m in messages)
+
+
+def test_nonpositive_strike_is_flagged() -> None:
+    frames = _clean_frames()
+    frames["position_snapshot"].loc[0, "strike"] = 0.0
+    report = check_frames(frames)
+    assert not report.ok
+    assert any(issue.code == "nonpositive_strike" for issue in report.issues)
+
+
+def test_nonpositive_multiplier_is_flagged() -> None:
+    frames = _clean_frames()
+    frames["position_snapshot"].loc[0, "multiplier"] = 0.0
+    report = check_frames(frames)
+    assert not report.ok
+    assert any(issue.code == "nonpositive_multiplier" for issue in report.issues)
+
+
+def test_duplicate_position_leg_is_flagged() -> None:
+    frames = _clean_frames()
+    duplicate = frames["position_snapshot"].iloc[1].to_dict()
+    frames["position_snapshot"] = pd.concat(
+        [frames["position_snapshot"], pd.DataFrame([duplicate])], ignore_index=True
+    )
+    report = check_frames(frames)
+    assert not report.ok
+    assert any(issue.code == "duplicate_position" for issue in report.issues)
+
+
+def test_blank_instrument_id_is_flagged() -> None:
+    frames = _clean_frames()
+    frames["position_snapshot"] = frames["position_snapshot"].copy()
+    frames["position_snapshot"].loc[0, "instrument_id"] = ""
+    report = check_frames(frames)
+    assert not report.ok
+    assert any(issue.code == "blank_key" for issue in report.issues)
+
+
+def test_check_snapshot_dir_on_corrupt_parquet_does_not_raise(tmp_path: Path) -> None:
+    write_snapshots(tmp_path, _clean_frames())
+    # Non-Parquet bytes -> ArrowInvalid (a ValueError) must become a report, not a crash.
+    (tmp_path / "position_snapshot.parquet").write_bytes(b"not a parquet file")
+    report = check_snapshot_dir(tmp_path)
+    assert not report.ok
+    assert any(issue.code == "unreadable" for issue in report.issues)

@@ -40,11 +40,13 @@ def recon_snapshot_dir(root: Path) -> ReconReport:
         frames = read_snapshots(root)
     except FileNotFoundError as exc:
         return ReconReport(issues=(ReconIssue(code="missing_file", message=str(exc)),))
+    except (ValueError, OSError) as exc:
+        return ReconReport(issues=(ReconIssue(code="unreadable", message=str(exc)),))
     try:
         events = read_ledger(root)
     except FileNotFoundError as exc:
         return ReconReport(issues=(ReconIssue(code="missing_file", message=str(exc)),))
-    except ValueError as exc:
+    except (ValueError, OSError) as exc:
         return ReconReport(issues=(ReconIssue(code="schema", message=str(exc)),))
     return recon_frames(frames, events)
 

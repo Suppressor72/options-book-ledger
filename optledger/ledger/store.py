@@ -22,7 +22,14 @@ def ledger_year_path(root: Path, year: int) -> Path:
     return ledger_dir(root) / f"{year}.parquet"
 
 
-def write_ledger(root: Path, events: pd.DataFrame) -> list[Path]:
+def write_ledger(root: Path, events: pd.DataFrame, *, replace: bool = False) -> list[Path]:
+    """Write lifecycle events as yearly Parquet.
+
+    The writer is authoritative for the years present in ``events`` (each such
+    year file is fully overwritten). Year partitions that are **not** in the
+    input are left untouched by default, so writing one year can never destroy
+    another. Pass ``replace=True`` to prune years absent from the input.
+    """
     frame = _normalize(events)
     if frame.empty:
         raise ValueError("ledger events must not be empty")
@@ -36,9 +43,13 @@ def write_ledger(root: Path, events: pd.DataFrame) -> list[Path]:
         part.to_parquet(path, engine=PARQUET_ENGINE, compression=PARQUET_COMPRESSION, index=False)
         written.append(path)
     keep = {path.name for path in written}
-    for stale in dest.glob("*.parquet"):
-        if stale.name not in keep:
-            stale.unlink()
+    if replace:
+        # Opt-in: prune year partitions absent from this write. The default
+        # leaves foreign years alone so an append-only ledger is never
+        # destroyed by writing a single year.
+        for stale in dest.glob("*.parquet"):
+            if stale.name not in keep:
+                stale.unlink()
     return written
 
 

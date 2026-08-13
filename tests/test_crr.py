@@ -178,17 +178,61 @@ def test_rejects_too_few_steps() -> None:
         crr_american_price_greeks(right="put", steps=1, **_HULL_CRR)
 
 
-def test_rejects_invalid_risk_neutral_probability() -> None:
-    with pytest.raises(ValueError, match="risk-neutral probability"):
-        crr_american_price_greeks(
-            spot=50.0,
-            strike=50.0,
-            time_years=1.0,
-            rate=5.0,
-            volatility=0.01,
-            right="put",
-            steps=2,
-        )
+def test_extreme_drift_clamps_to_a_finite_price() -> None:
+    """Extreme drift no longer raises; the tree clamps to a deterministic limit."""
+    result = crr_american_price_greeks(
+        spot=50.0,
+        strike=50.0,
+        time_years=1.0,
+        rate=5.0,
+        volatility=0.01,
+        right="put",
+        steps=2,
+    )
+    assert math.isfinite(result.price)
+    assert result.price >= 0.0
+    assert math.isfinite(result.vega)
+
+
+def test_low_vol_does_not_raise_and_routes_to_forward() -> None:
+    """Regression for the low-vol trap.
+
+    vol=0.0026 used to raise from the vega bump (vol-1e-4 hit p=1.0 exactly);
+    microscopic vol raised at the base. Both now return a finite price, and the
+    degenerate case converges to the deterministic (zero-vol) forward rather
+    than a frozen all-up tree.
+    """
+    zero = crr_american_price_greeks(
+        spot=100.0,
+        strike=100.0,
+        time_years=0.25,
+        rate=0.05,
+        volatility=0.0,
+        right="call",
+        steps=100,
+    )
+    realistic = crr_american_price_greeks(
+        spot=100.0,
+        strike=100.0,
+        time_years=0.25,
+        rate=0.05,
+        volatility=0.0026,
+        right="call",
+        steps=100,
+    )
+    assert math.isfinite(realistic.price)
+    assert math.isfinite(realistic.vega)
+    degen = crr_american_price_greeks(
+        spot=100.0,
+        strike=100.0,
+        time_years=0.25,
+        rate=0.05,
+        volatility=1e-9,
+        right="call",
+        steps=100,
+    )
+    assert math.isfinite(degen.price)
+    assert degen.price == pytest.approx(zero.price, abs=1e-6)
 
 
 def test_european_tree_put_call_parity_limit() -> None:
