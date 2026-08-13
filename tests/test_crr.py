@@ -63,6 +63,57 @@ def test_deep_itm_american_put_near_intrinsic() -> None:
     assert result.delta == pytest.approx(-1.0, abs=0.02)
 
 
+def test_american_put_holds_intrinsic_when_european_is_below() -> None:
+    """High-rate deep ITM put: European is worth less than K-S, so American exercises."""
+    kwargs = {
+        "spot": 50.0,
+        "strike": 100.0,
+        "time_years": 1.0,
+        "rate": 0.05,
+        "volatility": 0.15,
+        "dividend_yield": 0.0,
+    }
+    intrinsic = 50.0
+    european = black_scholes_price_greeks(right="put", **kwargs)
+    american = crr_american_price_greeks(right="put", steps=150, **kwargs)
+    assert european.price < intrinsic
+    assert american.price >= intrinsic
+
+
+def test_deep_itm_american_call_without_dividends_is_not_exercised() -> None:
+    """No-dividend American call keeps European time value; it is not exercised early."""
+    kwargs = {
+        "spot": 100.0,
+        "strike": 70.0,
+        "time_years": 1.0,
+        "rate": 0.05,
+        "volatility": 0.20,
+        "dividend_yield": 0.0,
+    }
+    intrinsic = 30.0
+    european = black_scholes_price_greeks(right="call", **kwargs)
+    american = crr_american_price_greeks(right="call", steps=200, **kwargs)
+    assert european.price > intrinsic
+    assert american.price > intrinsic
+    assert american.price == pytest.approx(european.price, abs=0.05)
+
+
+def test_zero_vol_american_put_exercises_at_intrinsic() -> None:
+    kwargs = {
+        "spot": 50.0,
+        "strike": 100.0,
+        "time_years": 1.0,
+        "rate": 0.05,
+        "volatility": 0.0,
+        "dividend_yield": 0.0,
+    }
+    intrinsic = 50.0
+    european = black_scholes_price_greeks(right="put", **kwargs)
+    american = crr_american_price_greeks(right="put", steps=8, **kwargs)
+    assert european.price < intrinsic
+    assert american.price == pytest.approx(intrinsic)
+
+
 def test_deep_otm_american_call_near_zero() -> None:
     result = crr_american_price_greeks(
         spot=50.0,

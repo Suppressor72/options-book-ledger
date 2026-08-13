@@ -2,6 +2,8 @@
 
 Snapshots, pin/join data quality, and option lifecycle reconciliation.
 
+[![CI](https://github.com/Suppressor72/options-book-ledger/actions/workflows/ci.yml/badge.svg)](https://github.com/Suppressor72/options-book-ledger/actions/workflows/ci.yml)
+
 Most public options repos either **price a contract** (QuantLib, vollib, Black-Scholes calculators) or **backtest a strategy** (Optopsy, VectorBT). This project is a small offline **book-operations** stack: joinable Parquet snapshots (account / positions / metrics) with fail-closed pin and join checks, a synthetic fill / expiry / assignment ledger reconciled to open quantity, and a CRR/BS reprice of that book so scenario P/L is computed from the same pins. It is not a QuantLib replacement, not a QuantStats clone, and not a live trading bot.
 
 **Status:** Public. How this grew: [CHANGELOG](CHANGELOG.md).
@@ -130,6 +132,19 @@ fixtures/            # tiny synthetic JSON (ticker XYZ)
 ```
 
 `pricing`, `book`, and `metrics` must not import `cli`, `web`, `data`, `ledger`, or extras.
+
+## Architecture
+
+**Pure** layers (`pricing`, `book`, `metrics`) are functions on numbers and frozen dataclasses. They do not import Parquet, the CLI, Streamlit, or extras (`vollib`, QuantLib, DuckDB, QuantStats). **Product** layers (`data`, `ledger`, `cli`, `web`) own pins, joins, recon, and the UI. `simulate` is the seeded XYZ demo path only. `tests/test_pricing_imports.py` walks the AST so the fence stays green.
+
+Book reprice marks lots with European BSM or American CRR. `demo-build` writes `book_metrics` at the same `snapshot_id` as the position pin. Ledger recon does not call the pricer; it checks qty, cash, and NLV against the pins.
+
+## How to extend
+
+These seams exist so a later slice can plug in without rewriting DQ or recon. **Neither plugin is in v1.**
+
+- **Different pricer:** `reprice_book` expects a price/Greeks result per lot. A later adapter (QuantLib, a custom model) would implement that shape and be selected at reprice time. Snapshot families, pins, and ledger recon stay the same.
+- **Another asset class:** `instrument_id` is already an opaque key. Ledger rows do not store call/put; those live on `position_snapshot`. Expire-worthless and assignment are the options-specific events. An equity or futures plugin would add its own fields and event kinds — do not add that plugin now.
 
 ## Limitations
 

@@ -4,6 +4,10 @@ How the public product grew. Each entry is the *why*, not a file list. The READM
 
 ## Unreleased
 
+Reviewers needed a CI shield and a short map of pure vs product layers, plus the seams a later pricer or asset class would use, without turning those seams into features. Architecture names `reprice_book` as the mark and `demo-build` as the `book_metrics` writer.
+
+CRR tests needed to show the early-exercise *decision*: an American put holds intrinsic when the European is below it, and a no-dividend American call is not exercised.
+
 ## 0.1.0 — 2026-08-13
 
 Shipped P0–P7 as a narrow book-operations stack, then set the GitHub repo public.
