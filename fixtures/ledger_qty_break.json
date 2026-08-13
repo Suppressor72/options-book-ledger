@@ -1,0 +1,137 @@
+{
+  "note": "Same pins as ledger_expire_worthless.json, but the expire_worthless row is missing. Position dropped the 90-put at EOD without a ledger event — recon must fail closed.",
+  "account_snapshot": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "nlv": 100000.0,
+      "cash": 99700.0
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "nlv": 100200.0,
+      "cash": 99700.0
+    }
+  ],
+  "position_snapshot": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240621-P-90",
+      "right": "put",
+      "strike": 90.0,
+      "expiry": "2024-06-21",
+      "qty": -1.0,
+      "spot": 100.0,
+      "iv": 0.2,
+      "model_price": 2.0,
+      "delta": -0.3,
+      "vega": 0.05,
+      "multiplier": 100.0,
+      "style": "american"
+    },
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240920-C-110",
+      "right": "call",
+      "strike": 110.0,
+      "expiry": "2024-09-20",
+      "qty": 1.0,
+      "spot": 100.0,
+      "iv": 0.18,
+      "model_price": 5.0,
+      "delta": 0.4,
+      "vega": 0.1,
+      "multiplier": 100.0,
+      "style": "american"
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240920-C-110",
+      "right": "call",
+      "strike": 110.0,
+      "expiry": "2024-09-20",
+      "qty": 1.0,
+      "spot": 100.0,
+      "iv": 0.18,
+      "model_price": 5.0,
+      "delta": 0.4,
+      "vega": 0.1,
+      "multiplier": 100.0,
+      "style": "american"
+    }
+  ],
+  "book_metrics": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "net_delta": 70.0,
+      "net_vega": 5.0,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "net_delta": 40.0,
+      "net_vega": 10.0,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt-0001",
+      "as_of": "2024-06-21T00:00:00",
+      "account": "demo",
+      "event_kind": "cash_deposit",
+      "symbol": "XYZ",
+      "instrument_id": "",
+      "qty": 0.0,
+      "cash": 100000.0
+    },
+    {
+      "event_id": "evt-0002",
+      "as_of": "2024-06-21T09:30:00",
+      "account": "demo",
+      "event_kind": "fill",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240621-P-90",
+      "qty": -1.0,
+      "cash": 200.0
+    },
+    {
+      "event_id": "evt-0003",
+      "as_of": "2024-06-21T09:30:00",
+      "account": "demo",
+      "event_kind": "fill",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240920-C-110",
+      "qty": 1.0,
+      "cash": -500.0
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "note": "Short 100-put is assigned at EOD: option off, 100 XYZ shares on. Simulated / seeded.",
+  "account_snapshot": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "nlv": 100000.0,
+      "cash": 100400.0
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "nlv": 100400.0,
+      "cash": 90400.0
+    }
+  ],
+  "position_snapshot": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240621-P-100",
+      "right": "put",
+      "strike": 100.0,
+      "expiry": "2024-06-21",
+      "qty": -1.0,
+      "spot": 100.0,
+      "iv": 0.25,
+      "model_price": 4.0,
+      "delta": -0.5,
+      "vega": 0.08,
+      "multiplier": 100.0,
+      "style": "american"
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ",
+      "right": "",
+      "strike": null,
+      "expiry": null,
+      "qty": 100.0,
+      "spot": 100.0,
+      "iv": null,
+      "model_price": 100.0,
+      "delta": 1.0,
+      "vega": 0.0,
+      "multiplier": 1.0,
+      "style": ""
+    }
+  ],
+  "book_metrics": [
+    {
+      "snapshot_id": "2024-06-21-open",
+      "as_of": "2024-06-21T09:30:00",
+      "pin_kind": "open",
+      "net_delta": 50.0,
+      "net_vega": -8.0,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    },
+    {
+      "snapshot_id": "2024-06-21-eod",
+      "as_of": "2024-06-21T16:00:00",
+      "pin_kind": "eod",
+      "net_delta": 100.0,
+      "net_vega": 0.0,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    }
+  ],
+  "events": [
+    {
+      "event_id": "evt-0001",
+      "as_of": "2024-06-21T00:00:00",
+      "account": "demo",
+      "event_kind": "cash_deposit",
+      "symbol": "XYZ",
+      "instrument_id": "",
+      "qty": 0.0,
+      "cash": 100000.0
+    },
+    {
+      "event_id": "evt-0002",
+      "as_of": "2024-06-21T09:30:00",
+      "account": "demo",
+      "event_kind": "fill",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240621-P-100",
+      "qty": -1.0,
+      "cash": 400.0
+    },
+    {
+      "event_id": "evt-0003",
+      "as_of": "2024-06-21T16:00:00",
+      "account": "demo",
+      "event_kind": "assignment",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240621-P-100",
+      "qty": 1.0,
+      "cash": 0.0
+    },
+    {
+      "event_id": "evt-0004",
+      "as_of": "2024-06-21T16:00:00",
+      "account": "demo",
+      "event_kind": "assignment",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ",
+      "qty": 100.0,
+      "cash": -10000.0
+    }
+  ]
+}

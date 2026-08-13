@@ -1,0 +1,69 @@
+{
+  "note": "Same shape as a demo pin set, but 2024-06-05-eod is missing from position_snapshot.",
+  "account_snapshot": [
+    {
+      "snapshot_id": "2024-06-05-open",
+      "as_of": "2024-06-05T09:30:00",
+      "pin_kind": "open",
+      "nlv": 100000.0,
+      "cash": 100000.0
+    },
+    {
+      "snapshot_id": "2024-06-05-eod",
+      "as_of": "2024-06-05T16:00:00",
+      "pin_kind": "eod",
+      "nlv": 100000.0,
+      "cash": 100000.0
+    }
+  ],
+  "position_snapshot": [
+    {
+      "snapshot_id": "2024-06-05-open",
+      "as_of": "2024-06-05T09:30:00",
+      "pin_kind": "open",
+      "symbol": "XYZ",
+      "instrument_id": "XYZ-20240920-C-100",
+      "right": "call",
+      "strike": 100.0,
+      "expiry": "2024-09-20",
+      "qty": -1.0,
+      "spot": 100.0,
+      "iv": 0.2,
+      "model_price": 4.0,
+      "delta": 0.5,
+      "vega": 0.1,
+      "multiplier": 100.0,
+      "style": "american"
+    }
+  ],
+  "book_metrics": [
+    {
+      "snapshot_id": "2024-06-05-open",
+      "as_of": "2024-06-05T09:30:00",
+      "pin_kind": "open",
+      "net_delta": -0.5,
+      "net_vega": -0.1,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    },
+    {
+      "snapshot_id": "2024-06-05-eod",
+      "as_of": "2024-06-05T16:00:00",
+      "pin_kind": "eod",
+      "net_delta": -0.5,
+      "net_vega": -0.1,
+      "pnl_spot_m20": 0.0,
+      "pnl_spot_m10": 0.0,
+      "pnl_spot_m05": 0.0,
+      "pnl_spot_0": 0.0,
+      "pnl_spot_p05": 0.0,
+      "pnl_spot_p10": 0.0,
+      "pnl_spot_p20": 0.0
+    }
+  ]
+}

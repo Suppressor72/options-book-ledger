@@ -1,0 +1,21 @@
+/data/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.uv/
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
+
+# Local agent guidance (private rewrite policy). Do not commit.
+AGENTS.md
+
+# Local project management (roadmap, backlog). Do not commit.
+/docs/_local/

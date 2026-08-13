@@ -1,0 +1,31 @@
+{
+  "seed": 72,
+  "symbol": "XYZ",
+  "start_date": "2024-06-03",
+  "n_days": 5,
+  "start_spot": 100.0,
+  "rate": 0.05,
+  "dividend_yield": 0.0,
+  "starting_cash": 100000.0,
+  "crr_steps": 40,
+  "legs": [
+    {
+      "quantity": -1.0,
+      "right": "call",
+      "strike": 100.0,
+      "expiry": "2024-09-20",
+      "iv": 0.20,
+      "multiplier": 100.0,
+      "style": "american"
+    },
+    {
+      "quantity": 1.0,
+      "right": "call",
+      "strike": 110.0,
+      "expiry": "2024-09-20",
+      "iv": 0.18,
+      "multiplier": 100.0,
+      "style": "american"
+    }
+  ]
+}
