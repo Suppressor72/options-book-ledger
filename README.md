@@ -125,7 +125,7 @@ optledger/metrics    # pure: TWR + max DD only
 optledger/data       # product: Parquet, pins, joins, DQ
 optledger/ledger     # product: synthetic lifecycle events
 optledger/simulate   # demo path: seeded XYZ book + fills
-optledger/cli        # Typer: demo-build, dq, ledger-recon, twr, web
+optledger/cli        # Typer: demo-build, dq, ledger-recon, twr, tearsheet, web
 optledger/web        # Streamlit: DQ, Ledger, Scenarios only
 tests/
 fixtures/            # tiny synthetic JSON (ticker XYZ)

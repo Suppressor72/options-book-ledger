@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
-        run: uv sync --extra dev --extra web
+        run: uv sync --extra dev --extra web --extra ref
       - name: Ruff
         run: uv run ruff check optledger tests && uv run ruff format --check optledger tests
       - name: Mypy

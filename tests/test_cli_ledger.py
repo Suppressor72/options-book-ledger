@@ -72,3 +72,32 @@ def test_ledger_recon_exits_one_on_null_eod_as_of(tmp_path: Path) -> None:
     assert "FAIL" in result.output
     assert "qty_break" in result.output
     assert not isinstance(result.exception, (TypeError, ValueError))
+
+
+def test_ledger_recon_exits_one_on_cash_break(tmp_path: Path) -> None:
+    dest = tmp_path / "cash-break"
+    _write_ops(dest, EXPIRE)
+    frames = {family: pd.read_parquet(dest / f"{family}.parquet") for family in FAMILIES}
+    eod = frames["account_snapshot"]["pin_kind"] == "eod"
+    # Ledger cash no longer matches the account cash pin.
+    frames["account_snapshot"].loc[eod, "cash"] = 1.0
+    frames["account_snapshot"].loc[eod, "nlv"] = 1.0 + 500.0
+    write_snapshots(dest, frames)
+    result = runner.invoke(app, ["ledger-recon", "--data", str(dest)])
+    assert result.exit_code == 1, result.output
+    assert "cash_break" in result.output
+    assert not isinstance(result.exception, (TypeError, ValueError))
+
+
+def test_ledger_recon_exits_one_on_nlv_break(tmp_path: Path) -> None:
+    dest = tmp_path / "nlv-break"
+    _write_ops(dest, EXPIRE)
+    frames = {family: pd.read_parquet(dest / f"{family}.parquet") for family in FAMILIES}
+    eod = frames["account_snapshot"]["pin_kind"] == "eod"
+    # Cash still reconciles, but nlv no longer equals cash plus the marked book.
+    frames["account_snapshot"].loc[eod, "nlv"] = 0.0
+    write_snapshots(dest, frames)
+    result = runner.invoke(app, ["ledger-recon", "--data", str(dest)])
+    assert result.exit_code == 1, result.output
+    assert "nlv_break" in result.output
+    assert not isinstance(result.exception, (TypeError, ValueError))
