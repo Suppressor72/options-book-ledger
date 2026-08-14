@@ -16,6 +16,10 @@ CRR raised on any low-but-nonzero volatility, because the risk-neutral probabili
 
 The fail-closed read paths (DQ, recon, TWR, web) treat unreadable Parquet — corrupt bytes, a missing column, a permission error — as a reportable break instead of a traceback; the pure-layer import fence now forbids `pandas`, `numpy`, and the demo package, not just the product layers; and the README's seeded TWR numbers are pinned by a test so the published output cannot drift silently.
 
+The European BS cross-check against vollib (to 1e-8) used to skip on every CI run because the `ref` extra was never installed, so the strongest pricing invariant was a local-only claim. CI now installs it and the cross-check runs; `ledger-recon`'s three break codes (qty, cash, nlv) are each proven through the command's exit code, not only in-memory.
+
+The seeded demo grew from a five-day, two-leg call spread to a twenty-five-day book with a short vertical plus a long call butterfly, so the TWR / drawdown path and the Streamlit screenshots reflect a multi-leg book reconciled across many pins rather than a single opening mark. Lifecycle events (expire, assignment) stay out — that is Phase 2.
+
 ## 0.1.0 — 2026-08-13
 
 Shipped P0–P7 as a narrow book-operations stack, then set the GitHub repo public.

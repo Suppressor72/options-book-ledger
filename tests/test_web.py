@@ -63,9 +63,10 @@ def test_eod_pins_and_book_from_demo_positions() -> None:
     assert pins
     assert pins[-1].endswith("-eod")
     book = book_from_positions(positions, pins[-1])
-    assert len(book.positions) == 2
+    n_legs = len(load_demo_spec(DEMO_FIXTURE).legs)
+    assert len(book.positions) == n_legs
     table = position_table(positions, pins[-1])
-    assert len(table) == 2
+    assert len(table) == n_legs
     grid, frame = scenario_grid_frame(book)
     assert frame.shape == (7, 7)
     assert grid.cell(0.0, 0.0) == pytest.approx(0.0, abs=1.0)

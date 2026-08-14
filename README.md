@@ -41,16 +41,16 @@ uv run optledger web --data data
 
 `demo-build` is idempotent on `fixtures/demo.json` (seed 72, ticker `XYZ`). `dq` exits 0 on that demo and 1 on `fixtures/broken_join.json` (after writing it to Parquet). `ledger-recon` exits 0 on the demo and on `fixtures/ledger_expire_worthless.json` / `fixtures/ledger_assignment.json`, and 1 on `fixtures/ledger_qty_break.json`. Output under `data/` is gitignored. Snapshot families, pins, ledger events, and recon are in [Data contract](#data-contract).
 
-TWR is flow-adjusted from EOD NLV pins and `cash_deposit` events only (fees and fill premiums already sit in marked NLV). Windows are `all`, `ytd`, and `trailing-12` (365 calendar days). **YTD is the TWR of pins whose `as_of` falls in the last pin's calendar year**, not a January-1 NAV interpolation. The five-day demo is too short for those windows to differ. Every demo number is **simulated / seeded** and is not live performance.
+TWR is flow-adjusted from EOD NLV pins and `cash_deposit` events only (fees and fill premiums already sit in marked NLV). Windows are `all`, `ytd`, and `trailing-12` (365 calendar days). **YTD is the TWR of pins whose `as_of` falls in the last pin's calendar year**, not a January-1 NAV interpolation. The twenty-five-day demo is too short for those windows to differ. Every demo number is **simulated / seeded** and is not live performance.
 
 Seeded `optledger twr --data data` after `demo-build` (seed 72):
 
 ```
 simulated / seeded
 window               twr     max_dd   ttr_days
-all                0.12%     -0.02%          1
-ytd                0.12%     -0.02%          1
-trailing-12        0.12%     -0.02%          1
+all                0.06%     -0.14%          —
+ytd                0.06%     -0.14%          —
+trailing-12        0.06%     -0.14%          —
 ```
 
 Optional extras:

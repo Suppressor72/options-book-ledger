@@ -33,9 +33,9 @@ def test_twr_cli_exits_zero_on_demo(tmp_path: Path) -> None:
     assert "trailing-12" in result.output
     # Pin the README-published seeded numbers so the demo output cannot drift silently.
     all_row = next(line for line in result.output.splitlines() if line.startswith("all"))
-    assert "0.12%" in all_row
-    assert "-0.02%" in all_row
-    assert all_row.rstrip().endswith("1")  # ttr_days
+    assert "0.06%" in all_row
+    assert "-0.14%" in all_row
+    assert all_row.rstrip().endswith("—")  # ttr_days: drawdown did not recover in window
 
 
 def test_twr_cli_exits_one_on_missing_account_column(tmp_path: Path) -> None:
