@@ -38,7 +38,7 @@ def test_ledger_recon_exits_zero_on_demo(tmp_path: Path) -> None:
         ["demo-build", "--out", str(built), "--fixture", str(DEMO_FIXTURE)],
     )
     assert build.exit_code == 0, build.output
-    assert (built / "ledger" / "2024.parquet").is_file()
+    assert any((built / "ledger").glob("*.parquet"))
     result = runner.invoke(app, ["ledger-recon", "--data", str(built)])
     assert result.exit_code == 0, result.output
     assert "ok:" in result.output

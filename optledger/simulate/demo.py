@@ -63,6 +63,7 @@ class DemoSpec:
     starting_cash: float
     crr_steps: int
     legs: tuple[DemoLeg, ...]
+    pin_every: int = 1
 
 
 def load_demo_spec(path: Path) -> DemoSpec:
@@ -97,15 +98,16 @@ def build_demo_bundle(spec: DemoSpec) -> DemoBundle:
         qty=0.0,
         cash=spec.starting_cash,
     )
-    for offset in range(spec.n_days):
-        day = spec.start_date + timedelta(days=offset)
+    vol_scale = math.sqrt(spec.pin_every)
+    for i in range(spec.n_days):
+        day = spec.start_date + timedelta(days=i * spec.pin_every)
         for pin_kind, clock, vol in pins:
-            spot *= math.exp(rng.gauss(0.0, vol))
+            spot *= math.exp(rng.gauss(0.0, vol * vol_scale))
             as_of = f"{day.isoformat()}T{clock}"
             snapshot_id = snapshot_id_for(day.isoformat(), pin_kind)
             book = _book_at(spec, spot=spot, as_of=datetime.fromisoformat(as_of))
             marked = mark_book(book, steps=spec.crr_steps)
-            emit_opening = offset == 0 and pin_kind == "open"
+            emit_opening = i == 0 and pin_kind == "open"
             net_delta = 0.0
             net_vega = 0.0
             for spec_leg, position in zip(spec.legs, book.positions, strict=True):
@@ -285,6 +287,7 @@ def _spec_from_mapping(raw: dict[str, Any]) -> DemoSpec:
         starting_cash=float(raw["starting_cash"]),
         crr_steps=int(raw["crr_steps"]),
         legs=legs,
+        pin_every=int(raw.get("pin_every", 1)),
     )
 
 

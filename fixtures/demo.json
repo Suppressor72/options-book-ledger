@@ -1,8 +1,9 @@
 {
   "seed": 72,
   "symbol": "XYZ",
-  "start_date": "2024-06-03",
-  "n_days": 25,
+  "start_date": "2023-11-15",
+  "n_days": 82,
+  "pin_every": 7,
   "start_spot": 100.0,
   "rate": 0.05,
   "dividend_yield": 0.0,
@@ -13,7 +14,7 @@
       "quantity": -1.0,
       "right": "call",
       "strike": 100.0,
-      "expiry": "2024-09-20",
+      "expiry": "2025-09-20",
       "iv": 0.20,
       "multiplier": 100.0,
       "style": "american"
@@ -22,7 +23,7 @@
       "quantity": 1.0,
       "right": "call",
       "strike": 110.0,
-      "expiry": "2024-09-20",
+      "expiry": "2025-09-20",
       "iv": 0.18,
       "multiplier": 100.0,
       "style": "american"
@@ -31,7 +32,7 @@
       "quantity": 1.0,
       "right": "call",
       "strike": 95.0,
-      "expiry": "2024-09-20",
+      "expiry": "2025-09-20",
       "iv": 0.21,
       "multiplier": 100.0,
       "style": "american"
@@ -40,7 +41,7 @@
       "quantity": -2.0,
       "right": "call",
       "strike": 105.0,
-      "expiry": "2024-09-20",
+      "expiry": "2025-09-20",
       "iv": 0.19,
       "multiplier": 100.0,
       "style": "american"
@@ -49,7 +50,7 @@
       "quantity": 1.0,
       "right": "call",
       "strike": 115.0,
-      "expiry": "2024-09-20",
+      "expiry": "2025-09-20",
       "iv": 0.17,
       "multiplier": 100.0,
       "style": "american"
