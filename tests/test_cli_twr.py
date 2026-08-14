@@ -36,10 +36,15 @@ def test_twr_cli_exits_zero_on_demo(tmp_path: Path) -> None:
     all_row = next(line for line in lines if line.startswith("all"))
     ytd_row = next(line for line in lines if line.startswith("ytd"))
     trailing_row = next(line for line in lines if line.startswith("trailing-12"))
-    # The demo spans late 2023 into mid-2025, so the three windows produce distinct TWR.
-    assert "-0.44%" in all_row and "-0.72%" in all_row
-    assert "-0.11%" in ytd_row
-    assert "-0.58%" in trailing_row
+    # The demo spans late 2023 into mid-2025, so the three windows produce distinct
+    # TWR, and each recovers from its worst drawdown within the window (ttr_days set).
+    assert "0.48%" in all_row and "-0.28%" in all_row and all_row.rstrip().endswith("63")
+    assert "0.13%" in ytd_row and "-0.19%" in ytd_row and ytd_row.rstrip().endswith("21")
+    assert (
+        "0.25%" in trailing_row
+        and "-0.28%" in trailing_row
+        and trailing_row.rstrip().endswith("63")
+    )
     assert len({all_row, ytd_row, trailing_row}) == 3
 
 

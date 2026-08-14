@@ -39,18 +39,18 @@ uv sync --extra web
 uv run optledger web --data data
 ```
 
-`demo-build` is idempotent on `fixtures/demo.json` (seed 72, ticker `XYZ`). `dq` exits 0 on that demo and 1 on `fixtures/broken_join.json` (after writing it to Parquet). `ledger-recon` exits 0 on the demo and on `fixtures/ledger_expire_worthless.json` / `fixtures/ledger_assignment.json`, and 1 on `fixtures/ledger_qty_break.json`. Output under `data/` is gitignored. Snapshot families, pins, ledger events, and recon are in [Data contract](#data-contract).
+`demo-build` is idempotent on `fixtures/demo.json` (seed 9, ticker `XYZ`). `dq` exits 0 on that demo and 1 on `fixtures/broken_join.json` (after writing it to Parquet). `ledger-recon` exits 0 on the demo and on `fixtures/ledger_expire_worthless.json` / `fixtures/ledger_assignment.json`, and 1 on `fixtures/ledger_qty_break.json`. Output under `data/` is gitignored. Snapshot families, pins, ledger events, and recon are in [Data contract](#data-contract).
 
-TWR is flow-adjusted from EOD NLV pins and `cash_deposit` events only (fees and fill premiums already sit in marked NLV). Windows are `all`, `ytd`, and `trailing-12` (365 calendar days). **YTD is the TWR of pins whose `as_of` falls in the last pin's calendar year**, not a January-1 NAV interpolation. The demo is pinned weekly from late 2023 into mid-2025, so the three windows differ: `all` covers every pin, `ytd` the last pin's calendar year, and `trailing-12` the trailing 365 days. Every demo number is **simulated / seeded** and is not live performance.
+TWR is flow-adjusted from EOD NLV pins and `cash_deposit` events only (fees and fill premiums already sit in marked NLV). Windows are `all`, `ytd`, and `trailing-12` (365 calendar days). **YTD is the TWR of pins whose `as_of` falls in the last pin's calendar year**, not a January-1 NAV interpolation. The demo is pinned weekly from late 2023 into mid-2025, so the three windows differ: `all` covers every pin, `ytd` the last pin's calendar year, and `trailing-12` the trailing 365 days. `max_dd` is the worst peak-to-trough drop of the TWR index and `ttr_days` the calendar days to recover from it (`—` = not recovered within the window); all terms are defined in the [Glossary](#glossary). Every demo number is **simulated / seeded** and is not live performance.
 
-Seeded `optledger twr --data data` after `demo-build` (seed 72):
+Seeded `optledger twr --data data` after `demo-build` (seed 9):
 
 ```
 simulated / seeded
 window               twr     max_dd   ttr_days
-all               -0.44%     -0.72%          —
-ytd               -0.11%     -0.11%          —
-trailing-12       -0.58%     -0.58%          —
+all                0.48%     -0.28%         63
+ytd                0.13%     -0.19%         21
+trailing-12        0.25%     -0.28%         63
 ```
 
 Optional extras:
@@ -145,6 +145,25 @@ These seams exist so a later slice can plug in without rewriting DQ or recon. **
 
 - **Different pricer:** `reprice_book` expects a price/Greeks result per lot. A later adapter (QuantLib, a custom model) would implement that shape and be selected at reprice time. Snapshot families, pins, and ledger recon stay the same.
 - **Another asset class:** `instrument_id` is already an opaque key. Ledger rows do not store call/put; those live on `position_snapshot`. Expire-worthless and assignment are the options-specific events. An equity or futures plugin would add its own fields and event kinds — do not add that plugin now.
+
+## Glossary
+
+| Term | Meaning |
+|------|---------|
+| **NLV** | Net liquidation value — account equity (cash plus marked positions) at a pin. |
+| **TWR** | Time-weighted return — the flow-adjusted geometric return of EOD NLV between deposits (not simple P/L). |
+| **max_dd** | Maximum drawdown — the worst peak-to-trough drop of the TWR index within the window. |
+| **ttr_days** | Time-to-recovery — calendar days from the `max_dd` trough back to the peak it fell from. `—` means the index did not recover to that peak before the window ended (a result, not an error). |
+| **pin** | A pinned as-of timestamp (`open` 09:30 or `eod` 16:00) at which the book is snapshotted. |
+| **snapshot_id** | `{YYYY-MM-DD}-{pin_kind}` — the join key across the three Parquet families. |
+| **instrument_id** | Opaque per-leg key (e.g. `XYZ-20250920-C-100`) — the qty-recon join key. |
+| **DQ** | Data quality — fail-closed pin / join / schema / value checks (`optledger dq`). |
+| **recon** | Reconciliation — ledger events checked against snapshot pins; reports `qty_break` / `cash_break` / `nlv_break` (`optledger ledger-recon`). |
+| **BS / BSM** | Black–Scholes–Merton — the European option model used for European lots. |
+| **CRR** | Cox–Ross–Rubinstein — the American binomial-tree model used for American lots. |
+| **IV** | Implied volatility — the per-leg volatility input. |
+| **Greeks** | delta, gamma, theta, vega — price sensitivities. Theta is calendar-day; vega is per +1 vol-point. |
+| **fill / expire_worthless / assignment / cash_deposit / fee** | Ledger event kinds. |
 
 ## Limitations
 

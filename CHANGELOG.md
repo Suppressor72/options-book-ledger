@@ -20,6 +20,8 @@ The European BS cross-check against vollib (to 1e-8) used to skip on every CI ru
 
 The seeded demo is a multi-leg book (short vertical plus a long call butterfly) pinned weekly from late 2023 into mid-2025, so the `all` / `ytd` / `trailing-12` TWR windows produce distinct values and the Streamlit screenshots reflect a book reconciled across many pins rather than a single opening mark. Lifecycle events (expire, assignment) stay out — that is Phase 2.
 
+The demo's seed moved to 9 so its seeded NLV path recovers from its worst drawdown within each window — the published TWR table now shows real `ttr_days` (63 / 21 / 63) rather than unrecovered `—`. A Glossary section now defines the abbreviations (NLV, TWR, max_dd, ttr_days, pin, snapshot_id, instrument_id, DQ, recon, BS, CRR, IV, Greeks) so no column or code reads as opaque.
+
 ## 0.1.0 — 2026-08-13
 
 Shipped P0–P7 as a narrow book-operations stack, then set the GitHub repo public.
